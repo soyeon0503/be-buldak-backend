@@ -37,7 +37,7 @@ docker compose buldak-app php artisan migrate:refresh -seed
 3. ``` cp .env .env.example ```
 4. ``` cd ../ ```
 5. ``` . ./init.sh ```
-6. [swagger](http://localhost:8080/api/documentation) 접속 확인
+6. [swagger](http://localhost:8081) 접속 확인
 
 
 
