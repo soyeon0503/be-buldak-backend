@@ -34,7 +34,7 @@ docker compose buldak-app php artisan migrate:refresh -seed
 
 1. ``` git clone  https://github.com/soyeon0503/be-buldak-backend.git ``` 
 2. ``` cd src ```
-3. ``` cp .env .env.example ```
+3. ``` cp .env.example .env```
 4. ``` cd ../ ```
 5. ``` . ./init.sh ```
 6. [swagger](http://localhost:8081) 접속 확인
