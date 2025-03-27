@@ -13,15 +13,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         // 실행할 seeder들 추가
         $this->all([
             TierSeeder::class,
         ]);
+
+        //실행할 factory들 추가
+        User::factory(30)->create();
     }
 }
