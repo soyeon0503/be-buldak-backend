@@ -42,7 +42,7 @@ docker compose buldak-app php artisan migrate:refresh -seed
 
 
 ## 화면설계서
-추가예정
+[figma](https://www.figma.com/design/toY46LpbgZxdI5nKEpmIr3/%EB%B6%88%EB%8B%AD%EC%9D%B4%EB%90%98?node-id=0-1&p=f&t=5EV5GZJx2wbW3wJb-0)
 
 
 ## FE 레포지토리
