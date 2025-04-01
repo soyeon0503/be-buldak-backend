@@ -27,8 +27,7 @@ return new class extends Migration
             $table->integer('recommend_side_dishes');
             $table->integer('writers');
             $table->integer('comments');
-            $table->timestamps('created_at');
-            $table->timestamps('updated_at');
+            $table->timestamps();
         });
     }
 

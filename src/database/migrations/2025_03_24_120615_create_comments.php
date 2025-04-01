@@ -16,8 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id');
             $table->foreignId('recipe_id');
             $table->text('context');
-            $table->timestamps('create_at');
-            $table->timestamps('updated_at');
+            $table->timestamps();
         });
     }
 
