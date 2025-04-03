@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 실행할 seeder들 추가
-        $this->all([
+        $this->call([
             TierSeeder::class,
         ]);
 

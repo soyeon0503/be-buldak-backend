@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'tier' => Tier::pluck('id')->random(),
+            'tier_id' => Tier::pluck('id')->random(),
             'birth' => fake()->date(),
             'provider' => null,
             'provider_id' => null,

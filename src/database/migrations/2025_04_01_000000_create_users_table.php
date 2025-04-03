@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('name');
             $table->string('password');
-            $table->foreignId('tier_id')->nullable()->constrained('tiers')->nullOnDelete();
+            $table->foreignId('tier_id')->constrained('tiers')->onDelete('restrict');
             $table->date('birth')->nullable();
-            $table->provider()->nullable();
-            $table->provider_id()->nullable();
+            $table->string('provider')->nullable();
+            $table->string('provider_id')->nullable();
             $table->timestamps();
         });
 
