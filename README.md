@@ -27,7 +27,7 @@ docker compose buldak-app php artisan migrate -seed
 
 DB변경사항이 있을 때 (롤백)
 ```
-docker compose buldak-app php artisan migrate:refresh -seed
+docker compose buldak-app php artisan migrate:refresh --seed
 ```
 
 ## 환경구축

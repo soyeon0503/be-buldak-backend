@@ -29,7 +29,7 @@ class UserController extends Controller
         $userEntities = $this->userService->index();
         return UserResponse::collection($userEntities);
     }
-
+ 
     public function show(int $id): UserResponse
     {
         $userEntity = $this->userService->show($id);
