@@ -12,16 +12,16 @@ class IngredientController extends Controller
 {
     public function __construct(private IngredientService $ingredientService) {}
 
-    public function register(IngredientRequest $request): In
+    public function register(IngredientRequest $request): IngredientResponse
     {
         $ingredientEntity = $this->ingredientService->register($request->validated());
-        return new UserResponse($ingredientEntity);
+        return new IngredientResponse($ingredientEntity);
     }
 
-    public function update(IngredientRequest $request, int $id): UserResponse
+    public function update(IngredientRequest $request, int $id): IngredientResponse
     {
         $ingredientEntity = $this->ingredientService->update($id, $request->validated());
-        return new UserResponse($ingredientEntity);
+        return new IngredientResponse($ingredientEntity);
     }
 
     public function index()

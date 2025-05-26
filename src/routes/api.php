@@ -20,7 +20,7 @@ Route::prefix('user')->group(function () {
     Route::middleware(['auth:sanctum', 'web'])->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('{id}', [UserController::class, 'show']);
-        Route::patch('{id}', [UserController::class, 'update']);
+        Route::put('{id}', [UserController::class, 'update']);
         Route::delete('{id}', [UserController::class, 'destroy']);
     });
 });
@@ -31,6 +31,7 @@ Route::post('/password/reset', [AuthController::class, 'passwordReset']);
 Route::prefix('ingredient')->group(function () {
     Route::get('/', [IngredientController::class, 'index']);
     Route::get('{id}', [IngredientController::class, 'show']);
-    Route::patch('{id}', [IngredientController::class, 'update']);
+    Route::put('{id}', [IngredientController::class, 'update']);
+    Route::post('/', [IngredientController::class, 'register']);
     Route::delete('{id}', [IngredientController::class, 'destroy']);
 });

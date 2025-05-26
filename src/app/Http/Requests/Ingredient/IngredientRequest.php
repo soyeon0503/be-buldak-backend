@@ -18,9 +18,8 @@ class IngredientRequest extends BaseRequest
 
         if ($this->isMethod('patch') || $this->isMethod('put')) {
             return [
-                'id' => 'required|integer|unique:ingredients,id',
-                'title' => 'required|string|max:100',
-                'description' => 'nullable|string|max:255',
+                'title' => 'sometimes|required|string|max:100',
+                'description' => 'sometimes|nullable|string|max:255',
             ];
         }
 
