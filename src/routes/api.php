@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\IngredientController;
 
 Route::prefix('auth')->middleware('web')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -26,3 +27,10 @@ Route::prefix('user')->group(function () {
 
 Route::post('/password/forgot', [AuthController::class, 'passwordResetRequest']);
 Route::post('/password/reset', [AuthController::class, 'passwordReset']);
+
+Route::prefix('ingredient')->group(function () {
+    Route::get('/', [IngredientController::class, 'index']);
+    Route::get('{id}', [IngredientController::class, 'show']);
+    Route::patch('{id}', [IngredientController::class, 'update']);
+    Route::delete('{id}', [IngredientController::class, 'destroy']);
+});
