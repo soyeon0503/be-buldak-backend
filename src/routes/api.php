@@ -24,3 +24,5 @@ Route::prefix('user')->group(function () {
     });
 });
 
+Route::post('/password/forgot', [AuthController::class, 'passwordResetRequest']);
+Route::post('/password/reset', [AuthController::class, 'passwordReset']);
