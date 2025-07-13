@@ -9,7 +9,5 @@ class SideMenuEntity
         public string $title,
         public ?string $image_path,
         public string $description,
-        public string $created_at = '',
-        public string $updated_at = ''
     ) {}
 }
