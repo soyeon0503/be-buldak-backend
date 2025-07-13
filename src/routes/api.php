@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\IngredientController;
 use App\Http\Controllers\Api\SideMenuController;
 use App\Http\Controllers\Api\TierController;
+use App\Http\Controllers\Api\ReceiptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,13 +37,10 @@ Route::post('/password/reset', [AuthController::class, 'passwordReset']);
 */
 Route::prefix('user')->group(function () {
     Route::post('/', [UserController::class, 'register']);
-
-    Route::middleware(['auth:sanctum', 'web'])->group(function () {
-        Route::get('/', [UserController::class, 'index']);
-        Route::get('{id}', [UserController::class, 'show']);
-        Route::put('{id}', [UserController::class, 'update']);
-        Route::delete('{id}', [UserController::class, 'destroy']);
-    });
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('{id}', [UserController::class, 'show']);
+    Route::put('{id}', [UserController::class, 'update']);
+    Route::delete('{id}', [UserController::class, 'destroy']);
 });
 
 /*
@@ -78,4 +76,19 @@ Route::prefix('side-menu')->group(function () {
 */
 Route::prefix('tier')->group(function () {
     Route::get('/', [TierController::class, 'index']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Receipt
+|--------------------------------------------------------------------------
+*/
+Route::prefix('receipt')->group(function () {
+    Route::get('/', [ReceiptController::class, 'index']);
+    Route::get('/{receipt}', [ReceiptController::class, 'show']);
+    Route::post('/{user}', [ReceiptController::class, 'register']);
+    Route::put('/{receipt}/{user}', [ReceiptController::class, 'update']);
+    Route::delete('/{receipt}', [ReceiptController::class, 'destroy']);
+    // 조회수 증가
+    Route::patch('/{receipt}/view', [ReceiptController::class, 'incrementViews']);
 });
