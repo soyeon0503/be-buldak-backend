@@ -66,6 +66,95 @@ components:
           type: string
           maxLength: 255
           example: 샐러드, 계란, 사과가 포함된 아침 식단
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        image_path:
+          type: string
+          nullable: true
+        description:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: integer
+        steps:
+          type: array
+          items:
+            type: string
+        servings:
+          type: integer
+        cooking_time:
+          type: integer
+        spicy:
+          type: integer
+        saved:
+          type: integer
+        views:
+          type: integer
+        rate:
+          type: integer
+        recommend_side_menus:
+          type: array
+          items:
+            type: integer
+        writer:
+          type: integer
+        comments:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date
+    ReceiptInput: 
+      type: object
+      required:
+        - title
+        - description
+        - ingredients
+        - steps
+        - servings
+        - cooking_time
+        - spicy
+      properties:
+        title:
+          type: string
+          maxLength: 100
+          example: 매운 불닭볶음면
+        image_path:
+          type: string
+          nullable: true
+          example: https://example.com/image.jpg
+        description:
+          type: string
+          maxLength: 255
+          example: 매운 불닭볶음면 레시피입니다.
+        ingredients:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        steps:
+          type: array
+          items:
+            type: string
+          example: ["재료 준비", "끓이기", "비비기"]
+        servings:
+          type: integer
+          example: 2
+        cooking_time:
+          type: integer
+          example: 15
+        spicy:
+          type: integer
+          example: 5
 paths:
   /sanctum/csrf-cookie:
     get:
@@ -190,7 +279,6 @@ paths:
           description: 입력값 검증 실패
         '409':
           description: 이미 등록된 이메일
-
 
   /api/users/{id}:
     get:
@@ -394,10 +482,10 @@ paths:
         '404':
           description: 등록되지 않은 이메일
 
-  /api/ingredients:
+  /api/ingredient:
     get:
       summary: 재료 목록 조회
-      tags: [Ingredients]
+      tags: [Ingredient]
       responses:
         '200':
           description: 재료 목록 반환
@@ -411,6 +499,9 @@ paths:
                     items:
                       type: object
                       properties:
+                        id:
+                          type: integer
+                          example: 1
                         name:
                           type: string
                           example: 콘치즈
@@ -420,7 +511,41 @@ paths:
                         image:
                           type: string
                           example: https://example.com/image1.jpg
-
+  
+  /api/ingredient/${id}:
+    get:
+      summary: 재료 상세 조회
+      tags: [Ingredient]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 재료 ID
+      responses:
+        '200':
+          description: 재료 상세 정보 반환
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: 콘치즈
+                  description:
+                    type: string
+                    example: ㅈㅁㅌ 콘치즈
+                  image:
+                    type: string
+                    example: https://example.com/image1.jpg
+        '404':
+          description: 재료를 찾을 수 없음
+  
   /api/side-menu:
     get:
       summary: 사이드 메뉴 목록 조회
@@ -435,7 +560,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SideMenu'
 
-  /side-menu/{id}:
+  /api/side-menu/{id}:
     get:
       summary: 사이드 메뉴 상세 조회
       tags: [SideMenu]
@@ -450,3 +575,131 @@ paths:
                 $ref: '#/components/schemas/SideMenu'
         '404':
           description: 사이드 메뉴를 찾을 수 없음
+
+  /api/receipt:
+    get:
+      summary: 전체 레시피 목록 조회
+      tags:
+        - Receipt
+      responses:
+        '200':
+          description: 전체 레시피 리스트 반환
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Receipt'
+
+  /api/receipt/{receipt}:
+    get:
+      summary: 단일 레시피 조회
+      tags:
+        - Receipt
+      parameters:
+        - name: receipt
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 레시피 ID
+      responses:
+        '200':
+          description: 레시피 정보 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '404':
+          description: 레시피를 찾을 수 없음
+
+    delete:
+      summary: 레시피 삭제
+      tags:
+        - Receipt
+      parameters:
+        - name: receipt
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 삭제 완료
+        '404':
+          description: 레시피를 찾을 수 없음
+
+  /api/receipt/{user}:
+    post:
+      summary: 레시피 등록
+      tags:
+        - Receipt
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 작성자 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptInput'
+      responses:
+        '201':
+          description: 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+
+  /api/receipt/{receipt}/{user}:
+    put:
+      summary: 레시피 수정
+      tags:
+        - Receipt
+      parameters:
+        - name: receipt
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 레시피 ID
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 작성자 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptInput'
+      responses:
+        '200':
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+
+  /api/receipt/{receipt}/view:
+    patch:
+      summary: 레시피 조회수 증가
+      tags:
+        - Receipt
+      parameters:
+        - name: receipt
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 조회수 1 증가 처리 완료
+        '404':
+          description: 레시피를 찾을 수 없음
