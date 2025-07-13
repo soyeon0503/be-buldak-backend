@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TierSeeder::class,
             SideMenuSeeder::class,
+            ReceiptSeeder::class,
         ]);
 
         //실행할 factory들 추가
