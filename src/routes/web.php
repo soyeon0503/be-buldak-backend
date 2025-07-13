@@ -6,9 +6,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// swagger
-Route::get('/api/docs.json', function () {
-    return response()->file(storage_path('api-docs/swagger.json'));
+Route::get('/api/docs.yaml', function () {
+    return response()->file(storage_path('api-docs/swagger_document.yaml'), [
+        'Content-Type' => 'application/yaml'
+    ]);
 });
 
 // 비밀번호 재설정 요청
