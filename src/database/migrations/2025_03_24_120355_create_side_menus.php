@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('side_dishes', function (Blueprint $table) {
+        Schema::create('side_menus', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('image_path');
             $table->text('description');
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('side_dishes');
+        Schema::dropIfExists('side_menus');
     }
 };
