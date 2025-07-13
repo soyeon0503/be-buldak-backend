@@ -6,7 +6,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response as HttpResponse;
 
-class IngredientResponse implements Responsable
+class SideMenuResponse implements Responsable
 {
     public function __construct(
         private mixed $data,

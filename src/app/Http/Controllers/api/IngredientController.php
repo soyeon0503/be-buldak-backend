@@ -29,10 +29,7 @@ class IngredientController extends Controller
         $ingredientEntities = $this->ingredientService->index();
 
         return response()->json([
-            'ingredients' => array_map(
-                fn($entity) => (new IngredientResponse($entity))->toResponse(request())->getData(),
-                $ingredientEntities
-            ),
+            'data' => $ingredientEntities,
         ]);
     }
  

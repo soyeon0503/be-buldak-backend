@@ -3,7 +3,6 @@ namespace App\Services;
 
 use App\Entities\IngredientEntity;
 use App\Repositories\IngredientRepository;
-use Illuminate\Support\Facades\Hash;
 
 class IngredientService
 {
@@ -45,8 +44,6 @@ class IngredientService
             id: $ingredient["id"],
             title: $ingredient["title"],
             description: $ingredient["description"] ?? null,
-            created_at: $ingredient["created_at"] ?? '',
-            updated_at: $ingredient["updated_at"] ?? ''
         );
     }
 }
