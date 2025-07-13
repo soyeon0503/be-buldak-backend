@@ -60,6 +60,26 @@ class ReceiptService
         $this->receiptRepository->delete($id);
     }
 
+    public function incrementViews(int $id): void
+    {
+        $receipt = $this->receiptRepository->find($id);
+
+        $receipt->increment('views'); // Eloquent에서 자동 증가 처리
+    }
+
+    public function getByUser(int $user_id): array
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            abort(404, '해당 유저를 찾을 수 없습니다.');
+        }
+
+        $receipts = $this->receiptRepository->getByUserId($user_id);
+
+        return array_map(fn($entity) => $this->toEntity($entity), $receipts);
+    }
+
     private function toEntity($receipt): ReceiptEntity
     {
         return new ReceiptEntity(
@@ -81,13 +101,6 @@ class ReceiptService
             created_at: $receipt["created_at"],
             updated_at: $receipt["updated_at"]
         );
-    }
-
-    public function incrementViews(int $id): void
-    {
-        $receipt = $this->receiptRepository->find($id);
-
-        $receipt->increment('views'); // Eloquent에서 자동 증가 처리
     }
 
 }

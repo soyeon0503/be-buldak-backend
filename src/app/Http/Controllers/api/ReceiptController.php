@@ -82,4 +82,17 @@ class ReceiptController extends Controller
 
         return response()->noContent(); // 또는 조회된 뷰 수를 리턴해도 됨
     }
+
+    /**
+     * 레시피작성한 유저 조회
+     * POST /api/receipts/user/{user}
+     */
+    public function userReceipts(int $user) :JsonResponse
+    {
+        $receipts = $this->receiptService->getByUser($user);
+
+        return response()->json([
+            'data' => $receipts,
+        ]);
+    }
 }

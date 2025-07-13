@@ -35,4 +35,10 @@ class ReceiptRepository
         $receipt = Receipt::findOrFail($id);
         $receipt->delete();
     }
+
+    public function getByUserId(int $user_id)
+    {
+        return Receipt::where('writer', $user_id)->orderByDesc('created_at')->get()->toArray();
+    }
+
 }

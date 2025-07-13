@@ -91,4 +91,6 @@ Route::prefix('receipt')->group(function () {
     Route::delete('/{receipt}', [ReceiptController::class, 'destroy']);
     // 조회수 증가
     Route::patch('/{receipt}/view', [ReceiptController::class, 'incrementViews']);
+    // 레시피 작성한 유저 조회
+    Route::get('/users/{user}', [ReceiptController::class, 'userReceipts']);
 });
