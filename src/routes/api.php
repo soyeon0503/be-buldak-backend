@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\IngredientController;
 use App\Http\Controllers\Api\SideMenuController;
 use App\Http\Controllers\Api\TierController;
 use App\Http\Controllers\Api\ReceiptController;
+use App\Http\Controllers\Api\ReceiptSaveController;
+use App\Http\Controllers\Api\ReceiptEatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,14 +85,24 @@ Route::prefix('tier')->group(function () {
 | Receipt
 |--------------------------------------------------------------------------
 */
-Route::prefix('receipt')->group(function () {
+Route::prefix('recipe')->group(function () {
     Route::get('/', [ReceiptController::class, 'index']);
-    Route::get('/{receipt}', [ReceiptController::class, 'show']);
+    Route::get('/{recipe}', [ReceiptController::class, 'show']);
     Route::post('/{user}', [ReceiptController::class, 'register']);
-    Route::put('/{receipt}/{user}', [ReceiptController::class, 'update']);
-    Route::delete('/{receipt}', [ReceiptController::class, 'destroy']);
+    Route::put('/{recipe}/{user}', [ReceiptController::class, 'update']);
+    Route::delete('/{recipe}', [ReceiptController::class, 'destroy']);
     // 조회수 증가
-    Route::patch('/{receipt}/view', [ReceiptController::class, 'incrementViews']);
+    Route::patch('/{recipe}/view', [ReceiptController::class, 'incrementViews']);
     // 레시피 작성한 유저 조회
     Route::get('/users/{user}', [ReceiptController::class, 'userReceipts']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    // 저장한 레시피
+    Route::patch('/recipe/{recipe}/save', [ReceiptSaveController::class, 'toggleSave']);
+    Route::get('/users/{user}/saved-recipe', [ReceiptSaveController::class, 'index']);
+
+    // 먹어본 레시피
+    Route::patch('/recipe/{recipe}/eat', [ReceiptEatController::class, 'toggleEat']);
+    Route::get('/users/{user}/eaten-recipe', [ReceiptEatController::class, 'index']);
 });
