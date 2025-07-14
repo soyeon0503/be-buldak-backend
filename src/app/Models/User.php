@@ -54,4 +54,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Tier::class);
     }
+
+    public function eatenReceipt()
+    {
+        return $this->belongsToMany(Receipt::class, 'user_eaten_receipts')->withTimestamps();
+    }
+
+    public function savedReceipt()
+    {
+        return $this->belongsToMany(Receipt::class, 'user_saved_receipts')->withTimestamps();
+    }
 }

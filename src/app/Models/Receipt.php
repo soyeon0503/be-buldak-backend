@@ -31,4 +31,15 @@ class Receipt extends Model
         'steps' => 'array',
         'recommend_side_menus' => 'array',
     ];
+
+    public function eatenByUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_eaten_receipts')->withTimestamps();
+    }
+
+    public function savedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_saved_receipts')->withTimestamps();
+    }
+
 }
