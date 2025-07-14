@@ -44,6 +44,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('user_saved_receipts'); // pivot
+        Schema::dropIfExists('user_eaten_receipts'); // pivot
+        Schema::dropIfExists('receipts'); // 참조하는 쪽
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
