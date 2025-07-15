@@ -1,130 +1,73 @@
-openapi: 3.0.0
-info:
-  title: My API
-  version: 1.0.0
-  description: 불닭이되 API 문서
-servers:
-- url: http://localhost:8080
-  description: Local development server
-security:
-- cookieAuth: []
-  csrfHeader: []
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: XSRF-TOKEN
-    csrfHeader:
-      type: apiKey
-      in: header
-      name: X-CSRF-TOKEN
-  parameters:
-    SideMenuId:
-      name: id
-      in: path
-      required: true
-      description: 사이드 메뉴 ID
-      schema:
-        type: integer
-        example: 1
-  schemas:
-    SideMenu:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        title:
-          type: string
-          maxLength: 100
-          example: 아침 식단
-        description:
-          type: string
-          maxLength: 255
-          example: 건강한 아침 식단 설명입니다.
-        created_at:
-          type: string
-          format: date-time
-          example: '2025-07-13T12:00:00Z'
-        updated_at:
-          type: string
-          format: date-time
-          example: '2025-07-13T12:10:00Z'
-    SideMenuRequest:
-      type: object
-      required:
-      - title
-      - description
-      properties:
-        title:
-          type: string
-          maxLength: 100
-          example: 아침 식단
-        description:
-          type: string
-          maxLength: 255
-          example: 샐러드, 계란, 사과가 포함된 아침 식단
-paths:
-  /sanctum/csrf-cookie:
-    get:
-      summary: CSRF 토큰 가져오기
-      tags:
-      - Security
-      responses:
-        '200':
-          description: CSRF 토큰 반환
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  csrf_token:
-                    type: string
-                    example: abc123xyz
-  /api/auth/login:
-    post:
-      summary: 로그인
-      tags:
-      - Users
-      parameters:
-      - name: X-CSRF-TOKEN
-        in: header
-        required: true
-        schema:
-          type: string
-        description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - email
-              - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: user@example.com
-                password:
-                  type: string
-                  format: password
-                  example: mypassword123
-      responses:
-        '200':
-          description: 로그인 성공
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user_id:
-                    type: integer
-                    example: 1
-                  message:
-                    type: string
-                    example: 로그인 성공
-        '401':
-          description: 로그인 실패 (잘못된 이메일 또는 비밀번호)
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+    container_name: buldak-app
+    working_dir: /var/www/html
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/app/php.ini:/usr/local/etc/php/php.ini
+      - ./docker/swagger:/var/www/html/storage/api-docs
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    networks:
+      - buldak-network
+    depends_on:
+      - mysql
+
+  web:
+    image: nginx:latest
+    container_name: buldak-web
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:8080"
+    networks:
+      - buldak-network
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: buldak-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: local_db
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbuserpw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - buldak-network
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: buldak-swagger
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /api-docs/swagger_document.yaml
+      VALIDATOR_URL: "none"
+    volumes:
+      - ./docker/swagger:/api-docs
+    depends_on:
+      - app
+    networks:
+      - buldak-network
+
+networks:
+  buldak-network:
+
+volumes:
+  mysql_data:
