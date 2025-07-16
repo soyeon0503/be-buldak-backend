@@ -11,9 +11,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'api/login',
-        'api/logout',
-        'api/user/*',
+        'api/*', // API 요청은 CSRF 검증을 제외합니다.
     ];
     
 }

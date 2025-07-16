@@ -11,9 +11,30 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
+    ->withMiddleware(function (Middleware $m) {
+
+        // 글로벌 미들웨어
+        $m->use([
+            App\Http\Middleware\TrustProxies::class,
+            Illuminate\Http\Middleware\HandleCors::class,
+            Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+            Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        ]);
+
+        // web 그룹 (세션 + CSRF + Sanctum)
+        $m->prependToGroup('web', [
+            App\Http\Middleware\EncryptCookies::class,
+            Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            Illuminate\Session\Middleware\StartSession::class,
+            Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            App\Http\Middleware\VerifyCsrfToken::class,
+        ]);
+    })
+
+    // ─────────── EXCEPTION HANDLER ─────────
+    ->withExceptions(function (Exceptions $e) {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+
+    ->create();

@@ -2,11 +2,8 @@
 
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_origins' => ['http://localhost:3000'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['*'], // Next.js 로컬 개발 환경
-    'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
-    'exposed_headers' => [],
-    'max_age' => 0,
-    'supports_credentials' => true,
+    'supports_credentials' => true,   // ★ 쿠키 전송 허용
 ];
