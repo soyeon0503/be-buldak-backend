@@ -18,9 +18,9 @@ use App\Http\Controllers\Api\CommentController;
 */
 
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::get('/user', [AuthController::class, 'me'])->middleware('auth:sanctum');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('web');
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('web');
+    Route::get('/user', [AuthController::class, 'me'])->middleware('web');
 
     Route::post('/password-reset/request', [AuthController::class, 'passwordResetRequest']);
     Route::post('/password-reset', [AuthController::class, 'passwordReset']);
