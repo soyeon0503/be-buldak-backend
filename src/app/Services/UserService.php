@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Entities\UserEntity;
@@ -49,8 +50,8 @@ class UserService
             id: $user->id,
             email: $user->email,
             name: $user->name,
-            birth: $user->birth,
-            tierId: $user->tier_id
+            birth: $user->birth?->toDateString(),
+            tierId: $user->tier_id,
         );
     }
 }

@@ -15,8 +15,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        
-
         // 실행할 seeder들 추가
         $this->call([
             TierSeeder::class,
@@ -29,7 +27,6 @@ class DatabaseSeeder extends Seeder
         //실행할 factory들 추가
         User::factory(30)->create();
         Ingredient::factory(30)->create();
-
 
     }
 }

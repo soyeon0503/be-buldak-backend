@@ -15,6 +15,8 @@ class UserRepository
     
     public function create(array $data): User
     {
+        $data['tier_id'] = $data['tier_id'] ?? 1;
+        
         return User::create($data);
     }
 

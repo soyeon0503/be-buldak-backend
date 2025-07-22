@@ -9,39 +9,33 @@ use App\Http\Controllers\Api\TierController;
 use App\Http\Controllers\Api\ReceiptController;
 use App\Http\Controllers\Api\ReceiptSaveController;
 use App\Http\Controllers\Api\ReceiptEatController;
+use App\Http\Controllers\Api\CommentController;
 
 /*
 |--------------------------------------------------------------------------
 | Authentication
 |--------------------------------------------------------------------------
 */
-Route::prefix('auth')->middleware('web')->group(function () {
+
+Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
-});
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::get('/user', [AuthController::class, 'me'])->middleware('auth:sanctum');
 
-Route::prefix('auth')->middleware(['auth:sanctum', 'web'])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/password-reset/request', [AuthController::class, 'passwordResetRequest']);
+    Route::post('/password-reset', [AuthController::class, 'passwordReset']);
 });
-
-/*
-|--------------------------------------------------------------------------
-| Password Reset
-|--------------------------------------------------------------------------
-*/
-Route::post('/password/forgot', [AuthController::class, 'passwordResetRequest']);
-Route::post('/password/reset', [AuthController::class, 'passwordReset']);
 
 /*
 |--------------------------------------------------------------------------
 | Users
 |--------------------------------------------------------------------------
 */
-Route::prefix('user')->group(function () {
-    Route::post('/', [UserController::class, 'register']);
+Route::prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('{id}', [UserController::class, 'show']);
-    Route::put('{id}', [UserController::class, 'update']);
+    Route::post('/', [UserController::class, 'register']);
+    Route::patch('{id}', [UserController::class, 'update']);
     Route::delete('{id}', [UserController::class, 'destroy']);
 });
 
@@ -50,7 +44,7 @@ Route::prefix('user')->group(function () {
 | Ingredients
 |--------------------------------------------------------------------------
 */
-Route::prefix('ingredient')->group(function () {
+Route::prefix('ingredients')->group(function () {
     Route::get('/', [IngredientController::class, 'index']);
     Route::get('{id}', [IngredientController::class, 'show']);
     Route::post('/', [IngredientController::class, 'register']);
@@ -63,7 +57,7 @@ Route::prefix('ingredient')->group(function () {
 | Side Menus
 |--------------------------------------------------------------------------
 */
-Route::prefix('side-menu')->group(function () {
+Route::prefix('side-menus')->group(function () {
     Route::get('/', [SideMenuController::class, 'index']);
     Route::get('{id}', [SideMenuController::class, 'show']);
     Route::post('/', [SideMenuController::class, 'register']);
@@ -76,7 +70,7 @@ Route::prefix('side-menu')->group(function () {
 | Tier
 |--------------------------------------------------------------------------
 */
-Route::prefix('tier')->group(function () {
+Route::prefix('tiers')->group(function () {
     Route::get('/', [TierController::class, 'index']);
 });
 
@@ -85,7 +79,7 @@ Route::prefix('tier')->group(function () {
 | Receipt
 |--------------------------------------------------------------------------
 */
-Route::prefix('recipe')->group(function () {
+Route::prefix('recipes')->group(function () {
     Route::get('/', [ReceiptController::class, 'index']);
     Route::get('/{recipe}', [ReceiptController::class, 'show']);
     Route::post('/{user}', [ReceiptController::class, 'register']);
@@ -99,10 +93,23 @@ Route::prefix('recipe')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     // 저장한 레시피
-    Route::patch('/recipe/{recipe}/save', [ReceiptSaveController::class, 'toggleSave']);
-    Route::get('/users/{user}/saved-recipe', [ReceiptSaveController::class, 'index']);
+    Route::patch('/recipes/{recipe}/save', [ReceiptSaveController::class, 'toggleSave']);
+    Route::get('/users/{user}/saved-recipes', [ReceiptSaveController::class, 'index']);
 
     // 먹어본 레시피
-    Route::patch('/recipe/{recipe}/eat', [ReceiptEatController::class, 'toggleEat']);
-    Route::get('/users/{user}/eaten-recipe', [ReceiptEatController::class, 'index']);
+    Route::patch('/recipes/{recipe}/eat', [ReceiptEatController::class, 'toggleEat']);
+    Route::get('/users/{user}/eaten-recipes', [ReceiptEatController::class, 'index']);
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('comments')->group(function () {
+        Route::post('/', [CommentController::class, 'store']);           // 댓글 등록
+        Route::put('{id}', [CommentController::class, 'update']);       // 댓글 수정
+        Route::get('{id}', [CommentController::class, 'show']);         // 댓글 상세
+        Route::delete('{id}', [CommentController::class, 'destroy']);   // 댓글 삭제
+    });
+
+    Route::get('/users/{userId}/comments', [CommentController::class, 'userComments']);       // 유저 댓글 목록
+    Route::get('/recipes/{recipeId}/comments', [CommentController::class, 'recipeComments']); // 레시피 댓글 목록
 });

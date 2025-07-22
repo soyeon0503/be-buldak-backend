@@ -42,4 +42,10 @@ class Receipt extends Model
         return $this->belongsToMany(User::class, 'user_saved_receipts')->withTimestamps();
     }
 
+    public function comments()
+{
+    return $this->hasMany(Comment::class);
+}
+
+
 }

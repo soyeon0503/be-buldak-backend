@@ -9,59 +9,53 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasFactory;
-   
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use HasFactory, Notifiable;
+
     protected $fillable = [
         'email',
-        'name',
         'password',
+        'name',
         'tier_id',
         'birth',
         'provider',
-        'provider_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'birth' => 'date',
+        'birth'             => 'date',
+        'tier_id'           => 'integer',
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'password'          => 'hashed',
     ];
 
-    /**
-     * Get the tier that the user belongs to.
-     */
+    protected static function booted(): void
+    {
+        static::creating(function ($user) {
+            if (is_null($user->tier_id)) {
+                $user->tier_id = 1;
+            }
+        });
+    }
+
     public function tier()
     {
-        return $this->belongsTo(Tier::class);
+        return $this->belongsTo(Tier::class, 'tier_id');
     }
 
     public function eatenReceipt()
     {
-        return $this->belongsToMany(Receipt::class, 'user_eaten_receipts')->withTimestamps();
+        return $this->belongsToMany(Receipt::class, 'user_eaten_receipts')
+                    ->withTimestamps();
     }
 
     public function savedReceipt()
     {
-        return $this->belongsToMany(Receipt::class, 'user_saved_receipts')->withTimestamps();
+        return $this->belongsToMany(Receipt::class, 'user_saved_receipts')
+                    ->withTimestamps();
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
 }

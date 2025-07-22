@@ -27,7 +27,10 @@ class UserController extends Controller
     public function index(): array
     {
         $userEntities = $this->userService->index();
-        return UserResponse::collection($userEntities);
+        return response()->json([
+            'data' => $userEntities,
+        ]);
+
     }
  
     public function show(int $id): UserResponse

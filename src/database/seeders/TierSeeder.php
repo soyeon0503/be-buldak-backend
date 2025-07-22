@@ -29,6 +29,16 @@ class TierSeeder extends Seeder
                 'description' => '맵부심',
                 'image_path' => 'tiers/advanced.png'
             ],
+            [
+                'name' => '4단계',
+                'description' => '맵고수',
+                'image_path' => 'tiers/expert.png'
+            ],
+            [
+                'name' => '5단계',
+                'description' => '맵신',
+                'image_path' => 'tiers/master.png'
+            ],
         ]);   
     }
 }
