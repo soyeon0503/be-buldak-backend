@@ -1,71 +1,94 @@
-
 openapi: 3.0.0
 info:
-  title: My API
-  version: 1.0.0
-  description: 불닭이되 API 문서
+  title: 불닭이되 API
+  version: "1.0.0"
+  description: |
+    Laravel-based REST API 문서  
+    - 인증 방식: Laravel Sanctum (세션 + XSRF)  
+    - CSRF 보호: XSRF-TOKEN 쿠키 + X-XSRF-TOKEN 헤더
+
 servers:
   - url: http://localhost:8080
-    description: Local development server
-security:
-  - cookieAuth: []
-    csrfHeader: []
+    description: Local development
+
 components:
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: XSRF-TOKEN
+      description: XSRF 방지용 쿠키
     csrfHeader:
       type: apiKey
       in: header
-      name: X-CSRF-TOKEN
+      name: X-XSRF-TOKEN
+      description: sanctum/csrf-cookie 호출 후 응답 쿠키 값을 헤더에 담아 전송
+      
   parameters:
-    SideMenuId:
+    UserId:
       name: id
       in: path
       required: true
-      description: 사이드 메뉴 ID
       schema:
         type: integer
-        example: 1
+      description: 유저 ID
+    RecipeId:
+      name: recipe
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: 레시피 ID
+    IngredientId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: 재료 ID
   schemas:
-    SideMenu:
+    ## 공통 ##
+    ApiMessage:
+      type: object
+      properties:
+        message:
+          type: string
+    ## Auth / User ##
+    AuthCredentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    User:
       type: object
       properties:
         id:
           type: integer
-          example: 1
-        title:
+        email:
           type: string
-          maxLength: 100
-          example: 아침 식단
-        description:
+        name:
           type: string
-          maxLength: 255
-          example: 건강한 아침 식단 설명입니다.
-        created_at:
+        birth:
           type: string
-          format: date-time
-          example: '2025-07-13T12:00:00Z'
-        updated_at:
-          type: string
-          format: date-time
-          example: '2025-07-13T12:10:00Z'
-    SideMenuRequest:
-      type: object
-      required:
-        - title
-        - description
-      properties:
-        title:
-          type: string
-          maxLength: 100
-          example: 아침 식단
-        description:
-          type: string
-          maxLength: 255
-          example: 샐러드, 계란, 사과가 포함된 아침 식단
+          format: date
+    UserCreateInput:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          required: [email, password, password_confirmation, name, birthdate]
+          properties:
+            password:
+              type: string
+              format: password
+            password_confirmation:
+              type: string
+              format: password
+    ## Recipe ##
     Recipe:
       type: object
       properties:
@@ -112,304 +135,136 @@ components:
           format: date-time
         updated_at:
           type: string
-          format: date
-    RecipeInput: 
+          format: date-time
+    RecipeInput:
+      allOf:
+        - $ref: '#/components/schemas/Recipe'
+        - type: object
+          required:
+            - title
+            - description
+            - ingredients
+            - steps
+            - servings
+            - cooking_time
+            - spicy
+  ## END components ##
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        recipe_id:
+          type: integer
+          example: 3
+        user_id:
+          type: integer
+          example: 7
+        score:
+          type: integer
+          example: 4
+        context:
+          type: string
+          maxLength: 500
+          example: "진짜 맛있어요! 또 해먹을래요"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-07-21T12:34:56Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-07-21T13:00:00Z"
+
+    CommentInput:
       type: object
       required:
-        - title
-        - description
-        - ingredients
-        - steps
-        - servings
-        - cooking_time
-        - spicy
+        - recipe_id
+        - score
+        - context
       properties:
-        title:
-          type: string
-          maxLength: 100
-          example: 매운 불닭볶음면
-        image_path:
-          type: string
-          nullable: true
-          example: https://example.com/image.jpg
-        description:
-          type: string
-          maxLength: 255
-          example: 매운 불닭볶음면 레시피입니다.
-        ingredients:
-          type: array
-          items:
-            type: integer
-          example: [1, 2, 3]
-        steps:
-          type: array
-          items:
-            type: string
-          example: ["재료 준비", "끓이기", "비비기"]
-        servings:
+        recipe_id:
           type: integer
-          example: 2
-        cooking_time:
-          type: integer
-          example: 15
-        spicy:
+          example: 3
+        score:
           type: integer
           example: 5
-    securitySchemes:
-    sanctumAuth:
-      type: apiKey
-      in: cookie
-      name: laravel_session
+        context:
+          type: string
+          maxLength: 500
+          example: "맵찔이인데도 맛있게 먹었어요!"
+
+security:
+  - cookieAuth: []
+    csrfHeader: []
 
 paths:
+  ########## Security ##########
   /sanctum/csrf-cookie:
     get:
-      summary: CSRF 토큰 가져오기
       tags: [Security]
+      summary: XSRF 쿠키 발급
       responses:
-        '200':
-          description: CSRF 토큰 반환
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  csrf_token:
-                    type: string
-                    example: abc123xyz
+        '204':
+          description: 성공 (Set-Cookie 헤더 포함)
 
+  ########## Auth ##########
   /api/auth/login:
     post:
+      tags: [Auth]
       summary: 로그인
-      tags: [Users]
-      parameters:
-        - name: X-CSRF-TOKEN
-          in: header
-          required: true
-          schema:
-            type: string
-          description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [email, password]
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: user@example.com
-                password:
-                  type: string
-                  format: password
-                  example: mypassword123
+              $ref: '#/components/schemas/AuthCredentials'
       responses:
         '200':
           description: 로그인 성공
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user_id:
-                    type: integer
-                    example: 1
-                  message:
-                    type: string
-                    example: 로그인 성공
+                allOf:
+                  - $ref: '#/components/schemas/ApiMessage'
+                  - type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
         '401':
-          description: 로그인 실패 (잘못된 이메일 또는 비밀번호)
+          description: 인증 실패
 
   /api/auth/logout:
     post:
+      tags: [Auth]
       summary: 로그아웃
-      tags: [Users]
-      parameters:
-        - name: X-CSRF-TOKEN
-          in: header
-          required: true
-          schema:
-            type: string
-          description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
       responses:
         '200':
-          description: 로그아웃 성공
+          description: 로그아웃 완료
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: 로그아웃 되었습니다.
-        '401':
-          description: 인증 실패
+                $ref: '#/components/schemas/ApiMessage'
 
-  /api/auth/register:
-    post:
-      summary: 회원가입
-      tags: [Users]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [email, password, password_confirmation, name, birthdate]
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: user@example.com
-                password:
-                  type: string
-                  format: password
-                  example: mypassword123
-                password_confirmation:
-                  type: string
-                  format: password
-                  example: mypassword123
-                name:
-                  type: string
-                  example: 홍길동
-                birthdate:
-                  type: string
-                  format: date
-                  example: 2000-01-01
-      responses:
-        '201':
-          description: 회원가입 성공
-        '400':
-          description: 입력값 검증 실패
-        '409':
-          description: 이미 등록된 이메일
-
-  /api/users/{id}:
+  /api/auth/user:
     get:
-      summary: 유저 상세 정보 조회
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 유저 ID
-        - name: X-CSRF-TOKEN
-          in: header
-          required: true
-          schema:
-            type: string
-          description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
+      tags: [Auth]
+      summary: 현재 로그인 사용자 정보
       responses:
         '200':
-          description: 유저 상세 정보 반환
+          description: 사용자 정보
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user_id:
-                    type: integer
-                    example: 1
-                  email:
-                    type: string
-                    example: user@example.com
-                  birthdate:
-                    type: string
-                    format: date
-                    example: 2000-01-01
+                $ref: '#/components/schemas/User'
         '401':
-          description: 인증 실패
-        '404':
-          description: 유저를 찾을 수 없음
+          description: 인증 필요
 
-    put:
-      summary: 유저 정보 갱신
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 유저 ID
-        - name: X-CSRF-TOKEN
-          in: header
-          required: true
-          schema:
-            type: string
-          description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [email, name, birthdate]
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: newemail@example.com
-                name:
-                  type: string
-                  example: 김철수
-                birthdate:
-                  type: string
-                  format: date
-                  example: 1995-06-15
-      responses:
-        '200':
-          description: 유저 정보 업데이트 성공
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: 유저 정보가 업데이트되었습니다.
-        '400':
-          description: 잘못된 요청
-        '401':
-          description: 인증 실패
-        '403':
-          description: 권한 없음
-        '404':
-          description: 유저를 찾을 수 없음
-
-    delete:
-      summary: 회원 탈퇴
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 삭제할 유저의 ID
-        - name: X-CSRF-TOKEN
-          in: header
-          required: true
-          schema:
-            type: string
-          description: CSRF 보호를 위한 X-CSRF-TOKEN 헤더
-      responses:
-        '204':
-          description: 회원 탈퇴 성공
-        '401':
-          description: 인증 실패
-        '403':
-          description: 권한 없음
-        '404':
-          description: 유저를 찾을 수 없음
-
-  /api/password/reset:
+  /api/auth/password-reset/request:
     post:
-      tags: [Password]
+      tags: [Auth]
+      summary: 비밀번호 재설정 링크(코드) 요청
       requestBody:
         required: true
         content:
@@ -421,232 +276,176 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: user@example.com
       responses:
         '200':
-          description: 인증코드 전송 성공
+          description: 전송 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiMessage'
         '404':
-          description: 등록되지 않은 이메일
+          description: 이메일 없음
 
-  /api/password/verify-code:
+  /api/auth/password-reset:
     post:
-      tags: [Password]
+      tags: [Auth]
+      summary: 비밀번호 재설정 실행
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [email, code]
+              required: [email, token, password, password_confirmation]
               properties:
                 email:
                   type: string
                   format: email
-                  example: user@example.com
-                code:
+                token:
                   type: string
-                  example: '123456'
-      responses:
-        '200':
-          description: 인증 성공
-        '400':
-          description: 잘못된 인증코드
-        '404':
-          description: 등록되지 않은 이메일
-
-  /api/password/change:
-    post:
-      tags: [Password]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [email, code, new_password, new_password_confirmation]
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: user@example.com
-                code:
-                  type: string
-                  example: '123456'
-                new_password:
+                password:
                   type: string
                   format: password
-                  example: newpassword123
-                new_password_confirmation:
+                password_confirmation:
                   type: string
                   format: password
-                  example: newpassword123
       responses:
         '200':
-          description: 비밀번호 변경 성공
-        '400':
-          description: 인증코드 불일치 또는 비밀번호 확인 불일치
-        '404':
-          description: 등록되지 않은 이메일
-
-  /api/ingredient:
-    get:
-      summary: 재료 목록 조회
-      tags: [Ingredient]
-      responses:
-        '200':
-          description: 재료 목록 반환
+          description: 변경 완료
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                          example: 1
-                        name:
-                          type: string
-                          example: 콘치즈
-                        description:
-                          type: string
-                          example: ㅈㅁㅌ 콘치즈
-                        image:
-                          type: string
-                          example: https://example.com/image1.jpg
-  
-  /api/ingredient/${id}:
+                $ref: '#/components/schemas/ApiMessage'
+        '400':
+          description: 토큰 오류 또는 검증 실패
+
+  ########## Users ##########
+  /api/users:
     get:
-      summary: 재료 상세 조회
-      tags: [Ingredient]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 재료 ID
+      tags: [Users]
+      summary: 사용자 리스트
       responses:
         '200':
-          description: 재료 상세 정보 반환
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    example: 1
-                  name:
-                    type: string
-                    example: 콘치즈
-                  description:
-                    type: string
-                    example: ㅈㅁㅌ 콘치즈
-                  image:
-                    type: string
-                    example: https://example.com/image1.jpg
-        '404':
-          description: 재료를 찾을 수 없음
-  
-  /api/side-menu:
-    get:
-      summary: 사이드 메뉴 목록 조회
-      tags: [SideMenu]
-      responses:
-        '200':
-          description: 사이드 메뉴 목록
+          description: 사용자 배열
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SideMenu'
-
-  /api/side-menu/{id}:
-    get:
-      summary: 사이드 메뉴 상세 조회
-      tags: [SideMenu]
-      parameters:
-        - $ref: '#/components/parameters/SideMenuId'
+                  $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateInput'
       responses:
-        '200':
-          description: 사이드 메뉴 상세
+        '201':
+          description: 생성됨
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SideMenu'
-        '404':
-          description: 사이드 메뉴를 찾을 수 없음
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 검증 실패
+        '409':
+          description: 중복 이메일
 
-  /api/recipe:
+  /api/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
     get:
-      summary: 전체 레시피 목록 조회
-      tags:
-        - Recipe
+      tags: [Users]
+      summary: 사용자 상세
       responses:
         '200':
-          description: 전체 레시피 리스트 반환
+          description: 사용자
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: 없음
+    put:
+      tags: [Users]
+      summary: 사용자 수정
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateInput'
+      responses:
+        '200':
+          description: 수정됨
+    delete:
+      tags: [Users]
+      summary: 사용자 삭제
+      responses:
+        '204':
+          description: 삭제 완료
+
+  ########## Ingredient ##########
+  /api/ingredients:
+    get:
+      tags: [Ingredient]
+      summary: 재료 목록
+      responses:
+        '200':
+          description: 재료 배열
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+                    description: { type: string }
+                    image: { type: string }
+
+  /api/ingredients/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IngredientId'
+    get:
+      tags: [Ingredient]
+      summary: 재료 상세
+      responses:
+        '200':
+          description: 재료
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  name: { type: string }
+                  description: { type: string }
+                  image: { type: string }
+        '404':
+          description: 없음
+
+  ########## Recipe ##########
+  /api/recipes:
+    get:
+      tags: [Recipe]
+      summary: 레시피 목록
+      responses:
+        '200':
+          description: 레시피 배열
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Recipe'
-
-  /api/recipe/{recipe}:
-    get:
-      summary: 단일 레시피 조회
-      tags:
-        - Recipe
-      parameters:
-        - name: recipe
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 레시피 ID
-      responses:
-        '200':
-          description: 레시피 정보 반환
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Recipe'
-        '404':
-          description: 레시피를 찾을 수 없음
-
-    delete:
-      summary: 레시피 삭제
-      tags:
-        - Recipe
-      parameters:
-        - name: recipe
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: 삭제 완료
-        '404':
-          description: 레시피를 찾을 수 없음
-
-  /api/recipe/{user}:
     post:
+      tags: [Recipe]
       summary: 레시피 등록
-      tags:
-        - Recipe
-      parameters:
-        - name: user
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 작성자 ID
       requestBody:
         required: true
         content:
@@ -655,30 +454,30 @@ paths:
               $ref: '#/components/schemas/RecipeInput'
       responses:
         '201':
-          description: 등록 성공
+          description: 생성
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Recipe'
 
-  /api/recipe/{recipe}/{user}:
+  /api/recipes/{recipe}:
+    parameters:
+      - $ref: '#/components/parameters/RecipeId'
+    get:
+      tags: [Recipe]
+      summary: 레시피 상세
+      responses:
+        '200':
+          description: 레시피
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: 없음
     put:
+      tags: [Recipe]
       summary: 레시피 수정
-      tags:
-        - Recipe
-      parameters:
-        - name: recipe
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 레시피 ID
-        - name: user
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 작성자 ID
       requestBody:
         required: true
         content:
@@ -687,150 +486,223 @@ paths:
               $ref: '#/components/schemas/RecipeInput'
       responses:
         '200':
-          description: 수정 성공
+          description: 수정됨
+    delete:
+      tags: [Recipe]
+      summary: 레시피 삭제
+      responses:
+        '204':
+          description: 삭제 완료
+
+  /api/recipes/{recipe}/view:
+    patch:
+      tags: [Recipe]
+      summary: 조회수 +1
+      responses:
+        '204':
+          description: 증가 완료
+        '404':
+          description: 없음
+
+  /api/recipes/{recipe}/save:
+    patch:
+      tags: [Recipe]
+      summary: 저장 토글
+      responses:
+        '200':
+          description: 토글 완료
+        '401':
+          description: 인증 필요
+        '404':
+          description: 없음
+
+  /api/recipes/{recipe}/eat:
+    patch:
+      tags: [Recipe]
+      summary: 먹음 토글
+      responses:
+        '200':
+          description: 토글 완료
+        '401':
+          description: 인증 필요
+        '404':
+          description: 없음
+
+  /api/users/{id}/recipes:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Recipe]
+      summary: 특정 유저가 작성한 레시피 목록
+      responses:
+        '200':
+          description: 레시피 배열
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
 
-  /api/recipe/{recipe}/view:
-    patch:
-      summary: 레시피 조회수 증가
-        - Recipe
+  /api/users/{user}/saved-recipes:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Recipe]
+      summary: 유저가 저장한 레시피
+      responses:
+        '200':
+          description: 저장 목록
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+
+  /api/users/{user}/eaten-recipes:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Recipe]
+      summary: 유저가 먹은 레시피
+      responses:
+        '200':
+          description: 먹은 목록
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+
+  /api/comments:
+    post:
+      tags: [Comment]
+      summary: 댓글 등록
+      security:
+        - cookieAuth: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '201':
+          description: 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /api/comments/{id}:
+    get:
+      tags: [Comment]
+      summary: 댓글 상세 보기
       parameters:
-        - name: recipe
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 댓글 상세 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: 댓글을 찾을 수 없음
+
+    put:
+      tags: [Comment]
+      summary: 댓글 수정
+      security:
+        - cookieAuth: []
+          csrfHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '200':
+          description: 수정된 댓글 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '403':
+          description: 권한 없음
+        '404':
+          description: 댓글을 찾을 수 없음
+
+    delete:
+      tags: [Comment]
+      summary: 댓글 삭제
+      security:
+        - cookieAuth: []
+          csrfHeader: []
+      parameters:
+        - name: id
           in: path
           required: true
           schema:
             type: integer
       responses:
         '204':
-          description: 조회수 1 증가 처리 완료
+          description: 삭제 성공
+        '403':
+          description: 권한 없음
         '404':
-          description: 레시피를 찾을 수 없음
-  
-  /api/recipe/users/{user}:
-      post:
-        summary: 유저가 작성한 레시피 목록
-        tags:
-          - Recipe
-        parameters:
-          - name: user
-            in: path
-            required: true
-            schema:
-              type: integer
-            description: 작성자 ID
-        responses:
-          '201':
-            description: 조회 성공
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Recipe'
+          description: 댓글을 찾을 수 없음
 
-  /api/recipe/{recipe}/save:
-    patch:
-      tags:
-        - Recipe
-      summary: 저장한 레시피 토글
-      description: 현재 유저 기준으로 해당 레시피를 저장/취소합니다.
-      security:
-        - sanctumAuth: []
-      parameters:
-        - name: recipe
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 토글할 레시피 ID
-      responses:
-        '200':
-          description: 저장 상태가 토글되었습니다
-        '401':
-          description: 인증 실패
-        '404':
-          description: 레시피를 찾을 수 없습니다
-
-  /api/recipe/{recipe}/eat:
-    patch:
-      tags:
-        - Recipe
-      summary: 먹은 레시피 토글
-      description: 현재 유저 기준으로 해당 레시피를 먹음/취소합니다.
-      security:
-        - sanctumAuth: []
-      parameters:
-        - name: recipe
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: 토글할 레시피 ID
-      responses:
-        '200':
-          description: 먹은 상태가 토글되었습니다
-        '401':
-          description: 인증 실패
-        '404':
-          description: 레시피를 찾을 수 없습니다
-
-  /api/users/{user}/saved-recipe:
+  /api/users/{userId}/comments:
     get:
-      tags:
-        - Recipe
-      summary: 유저가 저장한 레시피 목록
-      description: 특정 유저가 저장한 레시피 리스트를 반환합니다.
-      security:
-        - sanctumAuth: []
+      tags: [Comment]
+      summary: 특정 유저가 작성한 댓글 목록
       parameters:
-        - name: user
+        - name: userId
           in: path
           required: true
           schema:
             type: integer
-          description: 유저 ID
       responses:
         '200':
-          description: 저장된 레시피 목록
+          description: 유저 댓글 목록 반환
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Recipe'
-        '401':
-          description: 인증 실패
-        '404':
-          description: 유저를 찾을 수 없습니다
+                  $ref: '#/components/schemas/Comment'
 
-  /api/users/{user}/eaten-recipe:
+  /api/recipes/{recipeId}/comments:
     get:
-      tags:
-        - Recipe
-      summary: 유저가 먹은 레시피 목록
-      description: 특정 유저가 먹은 레시피 리스트를 반환합니다.
-      security:
-        - sanctumAuth: []
+      tags: [Comment]
+      summary: 특정 레시피에 대한 전체 댓글 목록
       parameters:
-        - name: user
+        - name: recipeId
           in: path
           required: true
           schema:
             type: integer
-          description: 유저 ID
       responses:
         '200':
-          description: 먹은 레시피 목록
+          description: 레시피 댓글 목록 반환
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Recipe'
-        '401':
-          description: 인증 실패
-        '404':
-          description: 유저를 찾을 수 없습니다
+                  $ref: '#/components/schemas/Comment'
