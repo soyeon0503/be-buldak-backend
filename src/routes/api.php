@@ -17,15 +17,16 @@ use App\Http\Controllers\Api\CommentController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->middleware('web');
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('web');
-    Route::get('/user', [AuthController::class, 'me'])->middleware('web');
-
+Route::prefix('auth')->middleware('web')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']); 
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/password-reset/request', [AuthController::class, 'passwordResetRequest']);
     Route::post('/password-reset', [AuthController::class, 'passwordReset']);
 });
 
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
+    Route::get('/auth/user', [AuthController::class, 'user']);
+});
 /*
 |--------------------------------------------------------------------------
 | Users
