@@ -27,7 +27,7 @@ class UserRequest extends BaseRequest
                 'name'     => ['required', 'string', 'max:50'],
                 'password' => [
                     'required', 'string', 'min:8', 'max:30', 'confirmed',
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@*&^]).+$/'
+                    'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@*&^]).+$/'
                 ]
             ]);
         }
@@ -41,7 +41,7 @@ class UserRequest extends BaseRequest
                 'name'     => ['sometimes', 'string', 'max:50'],
                 'password' => [
                     'sometimes', 'string', 'min:8', 'max:30', 'confirmed',
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@*&^]).+$/'
+                    'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@*&^]).+$/'
                 ],
                 'tier_id' => ['sometimes', 'integer', 'between:1,5'],
                 'birth'    => ['nullable', 'date'],
