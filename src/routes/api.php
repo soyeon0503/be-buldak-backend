@@ -82,14 +82,14 @@ Route::prefix('tiers')->group(function () {
 */
 Route::prefix('recipes')->group(function () {
     Route::get('/', [ReceiptController::class, 'index']);
+    // 레시피 작성한 유저 조회
+    Route::get('/users/{user}', [ReceiptController::class, 'userReceipts']);
     Route::get('/{recipe}', [ReceiptController::class, 'show']);
     Route::post('/{user}', [ReceiptController::class, 'register']);
     Route::put('/{recipe}/{user}', [ReceiptController::class, 'update']);
     Route::delete('/{recipe}', [ReceiptController::class, 'destroy']);
     // 조회수 증가
     Route::patch('/{recipe}/view', [ReceiptController::class, 'incrementViews']);
-    // 레시피 작성한 유저 조회
-    Route::get('/users/{user}', [ReceiptController::class, 'userReceipts']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
