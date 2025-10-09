@@ -92,7 +92,7 @@ Route::prefix('recipes')->group(function () {
     Route::patch('/{recipe}/view', [ReceiptController::class, 'incrementViews']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
     // 저장한 레시피
     Route::patch('/recipes/{recipe}/save', [ReceiptSaveController::class, 'toggleSave']);
     Route::get('/users/{user}/saved-recipes', [ReceiptSaveController::class, 'index']);
@@ -103,7 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::prefix('comments')->group(function () {
         Route::post('/', [CommentController::class, 'store']);           // 댓글 등록
         Route::put('{id}', [CommentController::class, 'update']);       // 댓글 수정
